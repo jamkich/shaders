@@ -18,6 +18,18 @@ float square(in vec2 st, in float pam1, in float pam2) {
     return pct;
 }
 
+float rectangle(in vec2 st, in vec2 bottomLeftBounds, in vec2 topRightBounds) {
+    // bottom-left
+    vec2 bl = floor(st - bottomLeftBounds + 1.);
+    float pct = bl.x * bl.y;
+
+    // top-right
+    vec2 tr = floor(1.0 - st - topRightBounds + 1.0);
+    pct *= tr.x * tr.y;
+
+    return pct;
+}
+
 void main() {
     vec2 st = gl_FragCoord.xy / u_resolution.xy;
     vec3 color = vec3(0.0);
