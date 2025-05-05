@@ -6,18 +6,6 @@ uniform vec2 u_resolution;
 uniform vec2 u_mouse;
 uniform float u_time;
 
-float square(in vec2 st, in float pam1, in float pam2) {
-    // bottom-left
-    vec2 bl = floor(st - pam1 + 1.);
-    float pct = bl.x * bl.y;
-
-    // top-right
-    vec2 tr = floor(1.0 - st - pam2 + 1.0);
-    pct *= tr.x * tr.y;
-
-    return pct;
-}
-
 float rectangle(in vec2 st, in vec2 bottomLeftBounds, in vec2 topRightBounds) {
     // bottom-left
     vec2 bl = floor(st - bottomLeftBounds + 1.);
@@ -30,19 +18,31 @@ float rectangle(in vec2 st, in vec2 bottomLeftBounds, in vec2 topRightBounds) {
     return pct;
 }
 
+float outline(in vec2 st, in vec2 bottomLeftBounds, in vec2 topRightBounds, float thickness) {
+    float outerMask = rectangle(st, bottomLeftBounds, topRightBounds);
+
+    vec2 inBottomLeft = bottomLeftBounds + vec2(thickness);
+    vec2 inTopRight = topRightBounds + vec2(thickness);
+
+    float inMask = rectangle(st, inBottomLeft, inTopRight);
+
+    float outlineMask = clamp(outerMask - inMask, 0.1, 1.);
+
+    return outlineMask;
+}
+
 void main() {
     vec2 st = gl_FragCoord.xy / u_resolution.xy;
     vec3 color = vec3(0.0);
 
-    float square_mask_1 = square(st, 0.9, 0.05);
-    float square_mask_2 = square(st, 0.4, 0.2);
-    float square_mask_3 = square(st, 0.05, 0.8);
+    float rectangleMask1 = rectangle(st, vec2(0.2, 0.3), vec2(0.4, 0.1));
 
-    vec3 color_1 = vec3(square_mask_1);
-    vec3 color_2 = vec3(square_mask_2);
-    vec3 color_3 = vec3(square_mask_3);
+    float outlineMask1 = outline(st, vec2(0.1, 0.4), vec2(0.2, 0.3), 0.002);
 
-    color = color_1 + color_2 + color_3;
+    vec3 color1 = vec3(rectangleMask1);
+    vec3 color2 = vec3(outlineMask1);
+
+    color = color1 + color2;
 
     gl_FragColor = vec4(color, 1.0);
 }
